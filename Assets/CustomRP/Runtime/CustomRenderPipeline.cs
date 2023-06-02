@@ -8,6 +8,11 @@ public class CustomRenderPipeline : RenderPipeline
 {
     private CameraRender _render = new CameraRender();
 
+    public CustomRenderPipeline()
+    {
+        GraphicsSettings.useScriptableRenderPipelineBatching = true;
+    }
+
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         foreach (var camera in cameras)
