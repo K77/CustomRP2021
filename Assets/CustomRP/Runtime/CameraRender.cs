@@ -15,10 +15,7 @@ using UnityEngine.Rendering;
             _camera = camera;
 
             if (!Cull()) return;
-            {
-                
-            }
-            
+
             Setup();
             DrawVisibleGeometry();
             Submit();
@@ -66,7 +63,7 @@ using UnityEngine.Rendering;
         {
             _buffer.EndSample(_bufferName);
             ExecuteBuffer();
-            _context.Submit();
+            _context.Submit();//called once every frame
         }
 
         void ExecuteBuffer()
