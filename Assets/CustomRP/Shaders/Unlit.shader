@@ -3,6 +3,7 @@ Shader "Custom RP/Unlit"
     Properties
     {
 //        _MainTex ("Texture", 2D) = "white" {}
+        _BaseColor("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 
     }
     SubShader

@@ -2,6 +2,7 @@
 #define CUSTOM_UNLIT_PASS_INCLUDED
 
 #include "../ShaderLibrary/Common.hlsl"
+// float4 _BaseColor;
 
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
@@ -37,14 +38,15 @@ Varyings UnlitPassVertex (Attributes input) {
 }
 
 float4 UnlitPassFragment (Varyings input) : SV_TARGET {
-    UNITY_SETUP_INSTANCE_ID(input);
-    float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-    float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
-    float4 base = baseMap * baseColor;
-    #if defined(_CLIPPING)
-    clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
-    #endif
-    return base;
+    return _BaseColor;
+    // UNITY_SETUP_INSTANCE_ID(input);
+    // float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
+    // float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
+    // float4 base = baseMap * baseColor;
+    // #if defined(_CLIPPING)
+    // clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
+    // #endif
+    // return base;
 }
 
 #endif
