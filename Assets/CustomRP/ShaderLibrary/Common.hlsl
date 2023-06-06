@@ -2,7 +2,7 @@
 #define CUSTOM_COMMON_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
-
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "UnityInput.hlsl"
 
 #define UNITY_MATRIX_M unity_ObjectToWorld
@@ -57,10 +57,12 @@
 // 	return UNITY_MATRIX_P;
 // }
 
+// #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
-#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 
-
+float Square (float x) {
+	return x * x;
+}
 
 // float3 TransformObjectToWorld (float3 positionOS) {
 //     return mul(unity_ObjectToWorld, float4(positionOS, 1.0)).xyz;
