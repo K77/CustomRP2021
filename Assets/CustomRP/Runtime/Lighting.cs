@@ -13,10 +13,12 @@ public class Lighting {
         name = bufferName
     };
     CullingResults cullingResults;
-    public void Setup (ScriptableRenderContext context,CullingResults cullingResults)
+    Shadows shadows = new Shadows();
+    public void Setup (ScriptableRenderContext context,CullingResults cullingResults,ShadowSettings shadowSettings)
     {
         this.cullingResults = cullingResults;
         buffer.BeginSample(bufferName);
+        shadows.Setup(context, cullingResults, shadowSettings);
         SetupLights();
         // SetupDirectionalLight();
         buffer.EndSample(bufferName);

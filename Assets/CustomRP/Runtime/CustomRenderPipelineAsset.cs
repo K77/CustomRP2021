@@ -7,9 +7,11 @@ using UnityEngine.Rendering;
 public class CustomRenderPipelineAsset : RenderPipelineAsset
 {
 
-
+    [SerializeField]
+    ShadowSettings shadows = default;
+    
     protected override RenderPipeline CreatePipeline()
     {
-        return new CustomRenderPipeline();
+        return new CustomRenderPipeline(true,false,true,shadows);
     }
 }

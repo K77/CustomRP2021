@@ -3,14 +3,18 @@ using UnityEngine.Rendering;
 
 // namespace CustomRP.Runtime
 // {
-    public class CameraRender
+    public partial class CameraRenderer
     {
         private ScriptableRenderContext _context;
         private Camera _camera;
         private const string _bufferName = "RenderGamera";
         private CommandBuffer _buffer = new CommandBuffer() { name = _bufferName };
         Lighting lighting = new Lighting();
-        public void Render(ScriptableRenderContext context, Camera camera)
+        private bool useDynamicBatching;
+        private bool useGPUInstancing;
+        public void Render(ScriptableRenderContext context, Camera camera,
+            bool useDynamicBatching, bool useGPUInstancing,
+            ShadowSettings shadowSettings)
         {
             _context = context;
             _camera = camera;
@@ -18,7 +22,7 @@ using UnityEngine.Rendering;
             if (!Cull()) return;
 
             Setup();
-            lighting.Setup(context);
+            lighting.Setup(context,_cullingResults,shadowSettings);
             DrawVisibleGeometry();
             Submit();
         }
@@ -43,14 +47,22 @@ using UnityEngine.Rendering;
             ExecuteBuffer();
         }
 
-        private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+        private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+            litShaderTagId = new ShaderTagId("CustomLit");
+        
         void DrawVisibleGeometry()
         {
             SortingSettings sortingSettings = new SortingSettings(_camera)
             {
                 criteria = SortingCriteria.CommonOpaque
             };
-            DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings);
+            DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
+            {
+                enableDynamicBatching = useDynamicBatching,
+                enableInstancing = useGPUInstancing
+            };
+            drawingSettings.SetShaderPassName(1,litShaderTagId);
+            
             FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
             _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
             _context.DrawSkybox(_camera);
