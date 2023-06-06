@@ -19,20 +19,20 @@ using UnityEngine.Rendering;
             _context = context;
             _camera = camera;
 
-            if (!Cull()) return;
-
+            if (!Cull(shadowSettings.maxDistance)) return;
+            _buffer.BeginSample(SampleName);
+            ExecuteBuffer();
+            lighting.Setup(context, _cullingResults, shadowSettings);
+            _buffer.EndSample(SampleName);
             Setup();
-            lighting.Setup(context,_cullingResults,shadowSettings);
             DrawVisibleGeometry();
             Submit();
         }
         
         private CullingResults _cullingResults;
-        bool Cull()
-        {
-            ScriptableCullingParameters p;
-            if (_camera.TryGetCullingParameters(out p))
-            {
+        bool Cull (float maxShadowDistance) {
+            if (_camera.TryGetCullingParameters(out ScriptableCullingParameters p)) {
+                p.shadowDistance = Mathf.Min(maxShadowDistance,_camera.farClipPlane);
                 _cullingResults = _context.Cull(ref p);
                 return true;
             }
