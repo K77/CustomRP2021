@@ -9,6 +9,7 @@ using UnityEngine.Rendering;
         private Camera _camera;
         private const string _bufferName = "RenderGamera";
         private CommandBuffer _buffer = new CommandBuffer() { name = _bufferName };
+        Lighting lighting = new Lighting();
         public void Render(ScriptableRenderContext context, Camera camera)
         {
             _context = context;
@@ -17,6 +18,7 @@ using UnityEngine.Rendering;
             if (!Cull()) return;
 
             Setup();
+            lighting.Setup(context);
             DrawVisibleGeometry();
             Submit();
         }
