@@ -20,10 +20,10 @@ using UnityEngine.Rendering;
             _camera = camera;
 
             if (!Cull(shadowSettings.maxDistance)) return;
-            _buffer.BeginSample(SampleName);
-            ExecuteBuffer();
-            lighting.Setup(context, _cullingResults, shadowSettings);
-            _buffer.EndSample(SampleName);
+            // _buffer.BeginSample(SampleName);
+            // ExecuteBuffer();
+            // lighting.Setup(context, _cullingResults, shadowSettings);
+            // _buffer.EndSample(SampleName);
             Setup();
             DrawVisibleGeometry();
             Submit();
@@ -41,10 +41,11 @@ using UnityEngine.Rendering;
         
         void Setup()
         {
-            _context.SetupCameraProperties(_camera);
-            _buffer.ClearRenderTarget(true,true,Color.clear);
+            // _buffer.ClearRenderTarget(true,true,Color.clear);
             _buffer.BeginSample(_bufferName);
+            // _buffer.BeginSample("kkk");
             ExecuteBuffer();
+            _context.SetupCameraProperties(_camera);
         }
 
         private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
@@ -52,38 +53,39 @@ using UnityEngine.Rendering;
         
         void DrawVisibleGeometry()
         {
-            SortingSettings sortingSettings = new SortingSettings(_camera)
-            {
-                criteria = SortingCriteria.CommonOpaque
-            };
-            DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
-            {
-                enableDynamicBatching = useDynamicBatching,
-                enableInstancing = useGPUInstancing
-            };
-            drawingSettings.SetShaderPassName(1,litShaderTagId);
-            
-            FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
-            _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
+            // SortingSettings sortingSettings = new SortingSettings(_camera)
+            // {
+            //     criteria = SortingCriteria.CommonOpaque
+            // };
+            // DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
+            // {
+            //     enableDynamicBatching = useDynamicBatching,
+            //     enableInstancing = useGPUInstancing
+            // };
+            // drawingSettings.SetShaderPassName(1,litShaderTagId);
+            //
+            // FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
+            // _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
             _context.DrawSkybox(_camera);
 
-            sortingSettings.criteria = SortingCriteria.CommonTransparent;
-            drawingSettings.sortingSettings = sortingSettings;
-            filteringSettings.renderQueueRange = RenderQueueRange.transparent;
-            _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
+            // sortingSettings.criteria = SortingCriteria.CommonTransparent;
+            // drawingSettings.sortingSettings = sortingSettings;
+            // filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+            // _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
         }
-
-        void Submit()
-        {
-            _buffer.EndSample(_bufferName);
-            ExecuteBuffer();
-            _context.Submit();//called once every frame
-        }
-
+        
         void ExecuteBuffer()
         {
             _context.ExecuteCommandBuffer(_buffer);
             _buffer.Clear();
+        }
+        
+        void Submit()
+        {
+            _buffer.EndSample(_bufferName);
+            // _buffer.EndSample("KKK");
+            ExecuteBuffer();
+            _context.Submit();//called once every frame
         }
     }
 // }
