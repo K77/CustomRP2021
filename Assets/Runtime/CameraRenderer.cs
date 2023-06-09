@@ -53,25 +53,25 @@ using UnityEngine.Rendering;
         
         void DrawVisibleGeometry()
         {
-            // SortingSettings sortingSettings = new SortingSettings(_camera)
-            // {
-            //     criteria = SortingCriteria.CommonOpaque
-            // };
-            // DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
-            // {
-            //     enableDynamicBatching = useDynamicBatching,
-            //     enableInstancing = useGPUInstancing
-            // };
-            // drawingSettings.SetShaderPassName(1,litShaderTagId);
-            //
-            // FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
-            // _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
+            SortingSettings sortingSettings = new SortingSettings(_camera)
+            {
+                criteria = SortingCriteria.CommonOpaque
+            };
+            DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
+            {
+                enableDynamicBatching = useDynamicBatching,
+                enableInstancing = useGPUInstancing
+            };
+            drawingSettings.SetShaderPassName(1,litShaderTagId);
+            
+            FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
+            _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
             _context.DrawSkybox(_camera);
 
-            // sortingSettings.criteria = SortingCriteria.CommonTransparent;
-            // drawingSettings.sortingSettings = sortingSettings;
-            // filteringSettings.renderQueueRange = RenderQueueRange.transparent;
-            // _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
+            sortingSettings.criteria = SortingCriteria.CommonTransparent;
+            drawingSettings.sortingSettings = sortingSettings;
+            filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+            _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
         }
         
         void ExecuteBuffer()
