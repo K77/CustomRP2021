@@ -18,7 +18,7 @@ using UnityEngine.Rendering;
         {
             _context = context;
             _camera = camera;
-
+            PrepareForSceneWindow();
             if (!Cull(shadowSettings.maxDistance)) return;
             // _buffer.BeginSample(SampleName);
             // ExecuteBuffer();
@@ -26,6 +26,8 @@ using UnityEngine.Rendering;
             // _buffer.EndSample(SampleName);
             Setup();
             DrawVisibleGeometry();
+            DrawUnsupportedShaders();
+            DrawGizmos();
             Submit();
         }
         
@@ -41,11 +43,16 @@ using UnityEngine.Rendering;
         
         void Setup()
         {
-            // _buffer.ClearRenderTarget(true,true,Color.clear);
-            _buffer.BeginSample(_bufferName);
-            // _buffer.BeginSample("kkk");
-            ExecuteBuffer();
+            //把当前摄像机的信息告诉上下文，这样shader中就可以获取到当前帧下摄像机的信息，比如  VP矩阵等
+            //同时也会设置当前的Render Target，这样ClearRenderTarget可以直接清除Render  Target中的数据，而不是通过绘制一个全屏的quad来达到同样效果（比较费）
             _context.SetupCameraProperties(_camera);
+            //清除当前摄像机Render Target中的内容,包括深度和颜色，ClearRenderTarget内部会   Begin/EndSample(buffer.name)
+            _buffer.ClearRenderTarget(true,true,Color.clear);
+            //在Profiler和Frame Debugger中开启对Command buffer的监测
+            _buffer.BeginSample(_bufferName);
+            // context.SetupCameraProperties(camera);
+            //提交CommandBuffer并且清空它，在Setup中做这一步的作用应该是确保在后续给CommandBuffer添加指令之前，其内容是空的。
+            ExecuteBuffer();
         }
 
         private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
@@ -60,11 +67,11 @@ using UnityEngine.Rendering;
             DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
             {
                 enableDynamicBatching = useDynamicBatching,
-                enableInstancing = useGPUInstancing
+                enableInstancing = false
             };
             drawingSettings.SetShaderPassName(1,litShaderTagId);
             
-            FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.all);
+            FilteringSettings filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
             _context.DrawRenderers(_cullingResults,ref drawingSettings,ref filteringSettings);
             _context.DrawSkybox(_camera);
 
