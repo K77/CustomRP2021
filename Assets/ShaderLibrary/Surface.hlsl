@@ -6,7 +6,9 @@ struct Surface {
     float3 viewDirection;
     float3 color;
     float alpha;
-    float metallic;
+    //金属度，等同于Specular反射率，表示高光和漫反射的比率
+    //等于1的时候可以认为几乎都是高光，没有漫反射
+    float metallic;         
     float smoothness;
 };
 

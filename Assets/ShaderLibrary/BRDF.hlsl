@@ -18,12 +18,16 @@ BRDF GetBRDF (Surface surface, bool applyAlphaToDiffuse = false) {
     BRDF brdf;
     float oneMinusReflectivity = OneMinusReflectivity(surface.metallic);
 
+    //baseMap * baseColor 本来的颜色，继续衰减
     brdf.diffuse = surface.color * oneMinusReflectivity;
+
+    //float3 lerp(float3 a, float3 b, float w) { return a + w*(b-a); } 
+    brdf.specular = lerp(MIN_REFLECTIVITY, surface.color, surface.metallic);
+    
     if (applyAlphaToDiffuse) {
         brdf.diffuse *= surface.alpha;
+        brdf.specular *= surface.alpha;//教程中没有这个，我感觉应该有
     }
-    brdf.specular = lerp(MIN_REFLECTIVITY, surface.color, surface.metallic);
-
     float perceptualRoughness =
         PerceptualSmoothnessToPerceptualRoughness(surface.smoothness);
     brdf.roughness = PerceptualRoughnessToRoughness(perceptualRoughness);

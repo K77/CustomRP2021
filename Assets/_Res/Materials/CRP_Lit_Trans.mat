@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CRP_Lit
+  m_Name: CRP_Lit_Trans
   m_Shader: {fileID: 4800000, guid: 5be06f897ab2b4b5cab54660e90cd040, type: 3}
   m_ValidKeywords:
   - _PREMULTIPLY_ALPHA
