@@ -22,6 +22,8 @@ using UnityEngine.Rendering;
             this.useGPUInstancing = useGPUInstancing;
             PrepareForSceneWindow();
             if (!Cull(shadowSettings.maxDistance)) return;
+            lighting.Setup(context,_cullingResults,shadowSettings);//这个要先于下一句，因为下一句会被RT弄成相机的
+
             // _buffer.BeginSample(SampleName);
             // ExecuteBuffer();
             // lighting.Setup(context, _cullingResults, shadowSettings);
