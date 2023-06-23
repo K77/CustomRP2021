@@ -18,18 +18,24 @@ Shader "CRP/Lit" {
 	
 	SubShader {
 		Pass {
-			Tags {
-				"LightMode" = "CustomLit"
-			}
+//设置Pass Tags，最关键的Tag为"LightMode"
+            Tags
+            {
+                "LightMode" = "CustomLit"
+            }
+            //设置混合模式
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
-			Blend [_SrcBlend] [_DstBlend]
-			ZWrite [_ZWrite]
 
 			HLSLPROGRAM
 			#pragma target 3.5
+			//告诉Unity启用_CLIPPING关键字时编译不同版本的Shader
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _PREMULTIPLY_ALPHA
+			//这一指令会让Unity生成两个该Shader的变体，一个支持GPU Instancing，另一个不支持。
 			#pragma multi_compile_instancing
+			
 			#pragma vertex LitPassVertex
 			#pragma fragment LitPassFragment
 			#include "LitPass.hlsl"
