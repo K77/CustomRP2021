@@ -1,4 +1,4 @@
-Shader "Custom RP/Lit" {
+Shader "CRP/Lit" {
 	
 	Properties {
 		_BaseMap("Texture", 2D) = "white" {}

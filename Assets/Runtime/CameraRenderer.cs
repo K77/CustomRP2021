@@ -18,6 +18,8 @@ using UnityEngine.Rendering;
         {
             _context = context;
             _camera = camera;
+            this.useDynamicBatching = useDynamicBatching;
+            this.useGPUInstancing = useGPUInstancing;
             PrepareForSceneWindow();
             if (!Cull(shadowSettings.maxDistance)) return;
             // _buffer.BeginSample(SampleName);
@@ -67,7 +69,7 @@ using UnityEngine.Rendering;
             DrawingSettings drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
             {
                 enableDynamicBatching = useDynamicBatching,
-                enableInstancing = false
+                enableInstancing = useGPUInstancing
             };
             drawingSettings.SetShaderPassName(1,litShaderTagId);
             
