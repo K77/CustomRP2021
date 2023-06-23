@@ -32,9 +32,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _Clipping: 1
-    - _Cutoff: 0.45
-    - _DstBlend: 0
-    - _SrcBlend: 1
+    - _Cutoff: 0.419
+    - _DstBlend: 10
+    - _SrcBlend: 5
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 0, b: 0, a: 0.6509804}

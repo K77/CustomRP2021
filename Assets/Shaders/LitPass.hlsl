@@ -10,23 +10,35 @@
 TEXTURE2D(_BaseMap);
 SAMPLER(sampler_BaseMap);
 
-CBUFFER_START(UnityPerMaterial)
-    float4 _BaseMap_ST;
-    float4 _BaseColor;
-    float _Cutoff;
-    float _Metallic;
-    float _Smoothness;
-CBUFFER_END
+// CBUFFER_START(UnityPerMaterial)
+//     float4 _BaseMap_ST;
+//     float4 _BaseColor;
+//     float _Cutoff;
+//     float _Metallic;
+//     float _Smoothness;
+// CBUFFER_END
 
+UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+    //纹理坐标的偏移和缩放可以是每实例数据
+    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseMap_ST)
+    //_BaseColor在数组中的定义格式
+    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+
+//Vertex shader的输入参数，都是顶点信息
 struct Attributes {
-    float3 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-    float2 baseUV : TEXCOORD0;
+    float3 positionOS : POSITION;   //顶点在模型空间中的位置
+    float3 normalOS : NORMAL;       //顶点在模型空间中的法线方向
+    float2 baseUV : TEXCOORD0;      //顶点对应的UV
     UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
+//Fragment shader的输入参数，都是片元信息
 struct Varyings {
-    float4 positionCS : SV_POSITION;
+    float4 positionCS : SV_POSITION;    //在Clip？（Project）space中的位置
     float3 positionWS : VAR_POSITION;
     float3 normalWS : VAR_NORMAL;
     float2 baseUV : VAR_BASE_UV;
@@ -39,10 +51,11 @@ Varyings LitPassVertex (Attributes input)
     UNITY_SETUP_INSTANCE_ID(input);
     UNITY_TRANSFER_INSTANCE_ID(input, output);
     output.positionWS = TransformObjectToWorld(input.positionOS);
-    output.positionCS = TransformWorldToHClip(output.positionWS);
+    output.positionCS = TransformWorldToHClip(output.positionWS); //就是VP矩阵变换
+    // output.positionCS.z = 0.1;
     output.normalWS = TransformObjectToWorldNormal(input.normalOS);
 
-    float4 baseST = _BaseMap_ST;
+    float4 baseST = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseMap_ST);
     output.baseUV = input.baseUV * baseST.xy + baseST.zw;
     return output;
 }
@@ -51,10 +64,10 @@ float4 LitPassFragment (Varyings input) : SV_TARGET {
     // return float4(1,1,1,1);
     UNITY_SETUP_INSTANCE_ID(input);
     float4 baseMap = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV);
-    float4 baseColor = _BaseColor;
+    float4 baseColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _BaseColor);
     float4 base = baseMap * baseColor;
     #if defined(_CLIPPING)
-    clip(base.a - _Cutoff);
+    clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
     #endif
 
     Surface surface;
@@ -62,9 +75,10 @@ float4 LitPassFragment (Varyings input) : SV_TARGET {
     surface.viewDirection = normalize(_WorldSpaceCameraPos - input.positionWS);
     surface.color = base.rgb;
     surface.alpha = base.a;
-    surface.metallic = _Metallic;
-    surface.smoothness =_Smoothness;
-        // UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+    // surface.metallic = _Metallic;
+    // surface.smoothness =_Smoothness;
+    surface.metallic = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Metallic);
+    surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
 	
     #if defined(_PREMULTIPLY_ALPHA)
         BRDF brdf = GetBRDF(surface, true);

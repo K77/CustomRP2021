@@ -3,7 +3,7 @@
 
 #define MAX_DIRECTIONAL_LIGHT_COUNT 4
 
-CBUFFER_START(_CustomLight)
+CBUFFER_START(_CustomLight1111)//这个名字是自定义的，表示出意思就可以了
     int _DirectionalLightCount;
     float4 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
     float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];

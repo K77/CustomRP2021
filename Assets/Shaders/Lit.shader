@@ -3,12 +3,13 @@ Shader "CRP/Lit" {
 	Properties {
 		_BaseMap("Texture", 2D) = "white" {}
 		_BaseColor("Color", Color) = (0.5, 0.5, 0.5, 1.0)
-		_Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
-		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
-
 		_Metallic ("Metallic", Range(0, 1)) = 0
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
-
+		
+		_Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+		
+		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+		
 		[Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
 
 		[Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
@@ -29,7 +30,8 @@ Shader "CRP/Lit" {
 
 
 			HLSLPROGRAM
-			#pragma target 3.5
+			//不生成OpenGL ES 2.0等图形API的着色器变体，其不支持可变次数的循环与线性颜色空间
+            #pragma target 3.5
 			//告诉Unity启用_CLIPPING关键字时编译不同版本的Shader
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _PREMULTIPLY_ALPHA
