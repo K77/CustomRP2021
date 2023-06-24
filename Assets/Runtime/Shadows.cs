@@ -7,7 +7,12 @@ using UnityEngine.Rendering;
     public Directional directional = new Directional {atlasSize = TextureSize._1024};
 }
 public class Shadows {
-    static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
+    static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
+        dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
+		
+    static Matrix4x4[]
+        dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount];
+    
     const string bufferName = "Shadows";
     const int maxShadowedDirectionalLightCount = 4;
     CommandBuffer buffer = new CommandBuffer {
