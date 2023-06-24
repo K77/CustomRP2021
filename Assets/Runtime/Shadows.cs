@@ -1,10 +1,15 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
-
+[System.Serializable] public class ShadowSettings {
+    public enum TextureSize {_512 = 512, _1024 = 1024, _2048 = 2048, _4096 = 4096 }
+    [System.Serializable] public struct Directional { public TextureSize atlasSize; }
+    [Min(0f)] public float maxDistance = 100f;
+    public Directional directional = new Directional {atlasSize = TextureSize._1024};
+}
 public class Shadows {
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas");
     const string bufferName = "Shadows";
-    const int maxShadowedDirectionalLightCount = 1;
+    const int maxShadowedDirectionalLightCount = 4;
     CommandBuffer buffer = new CommandBuffer {
         name = bufferName
     };
@@ -72,7 +77,7 @@ public class Shadows {
         int tileSize = atlasSize / split;
 
         for (int i = 0; i < ShadowedDirectionalLightCount; i++) {
-            RenderDirectionalShadows(i, atlasSize,tileSize);
+            RenderDirectionalShadows(i, split,tileSize);
         }
 		
         buffer.EndSample(bufferName);
@@ -85,8 +90,18 @@ public class Shadows {
         var shadowSettings =
             new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
         
+        //1. int activeLightIndex:当前要计算的光源索引。
+        //2. int splitIndex:级联索引，阴影级联相关，暂时不深入。
+        //3. int splitCount:级联的数量，阴影级联相关，暂时不深入。
+        //4. Vector3 splitRatio:级联比率，阴影级联相关，暂时不深入。
+        //5. int shadowResolution:阴影贴图（tile）的分辨率。
+        //6. float shadowNearPlaneOffset:光源的近平面偏移。
+        //7. out Matrix4x4 viewMatrix:计算出的视图矩阵。
+        //8. out Matrix4x4 projMatrix:计算出的投影矩阵。
+        //9. out Rendering.ShadowSplitData:计算的级联数据，阴影级联相关，暂时不深入。
         cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
-            light.visibleLightIndex, 0, 1, Vector3.zero, tileSize, 0f,
+            light.visibleLightIndex, 0, 1, Vector3.zero, 
+            tileSize, 0f,
             out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
             out ShadowSplitData splitData
         );

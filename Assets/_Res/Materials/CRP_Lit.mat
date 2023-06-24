@@ -30,9 +30,9 @@ Material:
     - _Clipping: 0
     - _Cutoff: 0.63
     - _DstBlend: 10
-    - _Metallic: 0.336
+    - _Metallic: 0
     - _PremulAlpha: 1
-    - _Smoothness: 0.892
+    - _Smoothness: 0.718
     - _SrcBlend: 5
     - _ZWrite: 0
     m_Colors:

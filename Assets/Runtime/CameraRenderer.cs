@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 
-// namespace CustomRP.Runtime
-// {
     public partial class CameraRenderer
     {
         private ScriptableRenderContext _context;
@@ -38,6 +36,7 @@ using UnityEngine.Rendering;
         private CullingResults _cullingResults;
         bool Cull (float maxShadowDistance) {
             if (_camera.TryGetCullingParameters(out ScriptableCullingParameters p)) {
+                //实际shadowDistance取maxShadowDistance和camera.farClipPlane中较小值
                 p.shadowDistance = Mathf.Min(maxShadowDistance,_camera.farClipPlane);
                 _cullingResults = _context.Cull(ref p);
                 return true;
