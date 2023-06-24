@@ -9,7 +9,8 @@ using UnityEngine.Rendering;
         [Range(0f, 1f)]public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
     }
-    [Min(0f)] public float maxDistance = 100f;
+    [Min(0.001f)] public float maxDistance = 100f;
+    [Range(0.001f, 1f)] public float distanceFade = 0.1f;    
     public Directional directional = new Directional {
         atlasSize = TextureSize._1024, cascadeCount = 4,
         cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f
@@ -18,11 +19,16 @@ using UnityEngine.Rendering;
 }
 public class Shadows {
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
-        dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
-		
+        dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices"),
+        cascadeCountId = Shader.PropertyToID("_CascadeCount"),
+        cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
+        // shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+        shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
+    
     const int maxShadowedDirectionalLightCount = 4, maxCascades = 4;
     static Matrix4x4[]
         dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
+    static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
     
     const string bufferName = "Shadows";
 
@@ -98,7 +104,15 @@ public class Shadows {
         for (int i = 0; i < ShadowedDirectionalLightCount; i++) {
             RenderDirectionalShadows(i, split,tileSize);
         }
+        
+        buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
+        buffer.SetGlobalVectorArray(
+            cascadeCullingSpheresId, cascadeCullingSpheres
+        );
+        
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
+        buffer.SetGlobalVector(shadowDistanceFadeId, 
+            new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade));
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -127,6 +141,18 @@ public class Shadows {
                 out ShadowSplitData splitData
             );
             shadowSettings.splitData = splitData;
+            if (index == 0) //todo 这个为什么是0？ 第一个光？是不是因为这个球体完全包裹对应的cascade，如果是平行光从哪里来无所谓？
+            {
+                Vector4 cullingSphere = splitData.cullingSphere;
+                // if (!Application.isEditor)
+                // {
+                //     Debug.Log($"splitData.cullingSphere: {splitData.cullingSphere}");
+                // }
+                
+                cullingSphere.w *= cullingSphere.w;
+                cascadeCullingSpheres[i] = cullingSphere;
+                // cascadeCullingSpheres[i] = splitData.cullingSphere;
+            }
             int tileIndex = tileOffset + i;
             dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(
                 projectionMatrix * viewMatrix,

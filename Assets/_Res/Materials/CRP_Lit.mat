@@ -28,11 +28,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _Clipping: 0
-    - _Cutoff: 0.63
+    - _Cutoff: 0.445
     - _DstBlend: 10
     - _Metallic: 0
     - _PremulAlpha: 1
-    - _Smoothness: 0.718
+    - _Smoothness: 0
     - _SrcBlend: 5
     - _ZWrite: 0
     m_Colors:

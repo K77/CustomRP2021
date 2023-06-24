@@ -5,6 +5,7 @@ struct Surface {
     float3 position;
     float3 normal;
     float3 viewDirection;
+    float depth;
     float3 color;
     float alpha;
     //金属度，等同于Specular反射率，表示高光和漫反射的比率
