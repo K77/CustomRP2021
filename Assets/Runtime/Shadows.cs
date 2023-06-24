@@ -2,23 +2,31 @@
 using UnityEngine.Rendering;
 [System.Serializable] public class ShadowSettings {
     public enum TextureSize {_512 = 512, _1024 = 1024, _2048 = 2048, _4096 = 4096 }
-    [System.Serializable] public struct Directional { public TextureSize atlasSize; }
+    [System.Serializable] public struct Directional
+    {
+        public TextureSize atlasSize;
+        [Range(1, 4)] public int cascadeCount;
+        [Range(0f, 1f)]public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
+        public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
+    }
     [Min(0f)] public float maxDistance = 100f;
-    public Directional directional = new Directional {atlasSize = TextureSize._1024};
+    public Directional directional = new Directional {
+        atlasSize = TextureSize._1024, cascadeCount = 4,
+        cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f
+    };
+    
 }
 public class Shadows {
     static int dirShadowAtlasId = Shader.PropertyToID("_DirectionalShadowAtlas"),
         dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices");
 		
+    const int maxShadowedDirectionalLightCount = 4, maxCascades = 4;
     static Matrix4x4[]
-        dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount];
+        dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
     
     const string bufferName = "Shadows";
-    const int maxShadowedDirectionalLightCount = 4;
-    CommandBuffer buffer = new CommandBuffer {
-        name = bufferName
-    };
-    
+
+    CommandBuffer buffer = new CommandBuffer {name = bufferName};
     struct ShadowedDirectionalLight {
         public int visibleLightIndex;
     }
@@ -50,17 +58,12 @@ public class Shadows {
             light.shadows != LightShadows.None && light.shadowStrength > 0f &&
             cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b) )
         {
-            // ShadowedDirectionalLights[ShadowedDirectionalLightCount++] =
-            //     new ShadowedDirectionalLight {
-            //         visibleLightIndex = visibleLightIndex
-            //     };
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
-                new ShadowedDirectionalLight {
-                    visibleLightIndex = visibleLightIndex
-                };
+                new ShadowedDirectionalLight {visibleLightIndex = visibleLightIndex};
             return new Vector2(
-                //shadowStrength越小，影子越淡
-                light.shadowStrength, ShadowedDirectionalLightCount++
+                //原始参数，shadowStrength越小，影子越淡
+                light.shadowStrength, 
+                settings.directional.cascadeCount * ShadowedDirectionalLightCount++
             );
         }
 
@@ -88,7 +91,8 @@ public class Shadows {
         buffer.BeginSample(bufferName);
         ExecuteBuffer();
         
-        int split = ShadowedDirectionalLightCount <= 1 ? 1 : 2;
+        int tiles = ShadowedDirectionalLightCount * settings.directional.cascadeCount;
+        int split = tiles <= 1 ? 1 : tiles <= 4 ? 2 : 4;
         int tileSize = atlasSize / split;
 
         for (int i = 0; i < ShadowedDirectionalLightCount; i++) {
@@ -98,40 +102,40 @@ public class Shadows {
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
-
+    //1. int activeLightIndex:当前要计算的光源索引。
+    //2. int splitIndex:级联索引，阴影级联相关，暂时不深入。
+    //3. int splitCount:级联的数量，阴影级联相关，暂时不深入。
+    //4. Vector3 splitRatio:级联比率，阴影级联相关，暂时不深入。
+    //5. int shadowResolution:阴影贴图（tile）的分辨率。
+    //6. float shadowNearPlaneOffset:光源的近平面偏移。
+    //7. out Matrix4x4 viewMatrix:计算出的视图矩阵。
+    //8. out Matrix4x4 projMatrix:计算出的投影矩阵。
+    //9. out Rendering.ShadowSplitData:计算的级联数据，阴影级联相关，暂时不深入。
     void RenderDirectionalShadows (int index, int split, int tileSize)
     {
         ShadowedDirectionalLight light = ShadowedDirectionalLights[index];
         var shadowSettings =
             new ShadowDrawingSettings(cullingResults, light.visibleLightIndex);
-        
-        //1. int activeLightIndex:当前要计算的光源索引。
-        //2. int splitIndex:级联索引，阴影级联相关，暂时不深入。
-        //3. int splitCount:级联的数量，阴影级联相关，暂时不深入。
-        //4. Vector3 splitRatio:级联比率，阴影级联相关，暂时不深入。
-        //5. int shadowResolution:阴影贴图（tile）的分辨率。
-        //6. float shadowNearPlaneOffset:光源的近平面偏移。
-        //7. out Matrix4x4 viewMatrix:计算出的视图矩阵。
-        //8. out Matrix4x4 projMatrix:计算出的投影矩阵。
-        //9. out Rendering.ShadowSplitData:计算的级联数据，阴影级联相关，暂时不深入。
-        cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
-            light.visibleLightIndex, 0, 1, Vector3.zero, 
-            tileSize, 0f,
-            out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
-            out ShadowSplitData splitData
-        );
-        
-        shadowSettings.splitData = splitData;
-        // SetTileViewport(index, split, tileSize);
-        dirShadowMatrices[index] = ConvertToAtlasMatrix(
-            projectionMatrix * viewMatrix,
-            SetTileViewport(index, split, tileSize), split
-        );
-        // dirShadowMatrices[index] = projectionMatrix * viewMatrix;
-        buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
-        
-        ExecuteBuffer();
-        context.DrawShadows(ref shadowSettings);
+        int cascadeCount = settings.directional.cascadeCount;
+        int tileOffset = index * cascadeCount;
+        Vector3 ratios = settings.directional.CascadeRatios;
+		
+        for (int i = 0; i < cascadeCount; i++) {
+            cullingResults.ComputeDirectionalShadowMatricesAndCullingPrimitives(
+                light.visibleLightIndex, i, cascadeCount, ratios, tileSize, 0f,
+                out Matrix4x4 viewMatrix, out Matrix4x4 projectionMatrix,
+                out ShadowSplitData splitData
+            );
+            shadowSettings.splitData = splitData;
+            int tileIndex = tileOffset + i;
+            dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(
+                projectionMatrix * viewMatrix,
+                SetTileViewport(tileIndex, split, tileSize), split
+            );
+            buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+            ExecuteBuffer();
+            context.DrawShadows(ref shadowSettings);
+        }
     }
     Vector2 SetTileViewport (int index, int split, float tileSize) {
         Vector2 offset = new Vector2(index % split, index / split);
