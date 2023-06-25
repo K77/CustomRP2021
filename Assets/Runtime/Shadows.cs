@@ -146,15 +146,7 @@ public class Shadows {
             shadowSettings.splitData = splitData;
             if (index == 0) //todo 这个为什么是0？ 第一个光？是不是因为这个球体完全包裹对应的cascade，如果是平行光从哪里来无所谓？
             {
-                Vector4 cullingSphere = splitData.cullingSphere;
-                // if (!Application.isEditor)
-                // {
-                //     Debug.Log($"splitData.cullingSphere: {splitData.cullingSphere}");
-                // }
-                
-                cullingSphere.w *= cullingSphere.w;
-                cascadeCullingSpheres[i] = cullingSphere;
-                // cascadeCullingSpheres[i] = splitData.cullingSphere;
+                SetCascadeData(i, splitData.cullingSphere, tileSize);
             }
             int tileIndex = tileOffset + i;
             dirShadowMatrices[tileIndex] = ConvertToAtlasMatrix(
@@ -163,11 +155,21 @@ public class Shadows {
             );
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             //这句话在这里的意思就是，要改变阴影图集的画法？
-            buffer.SetGlobalDepthBias(0f, 3f);
+            // buffer.SetGlobalDepthBias(0f, 3f);
             ExecuteBuffer();
             context.DrawShadows(ref shadowSettings);
-            buffer.SetGlobalDepthBias(0f, 0f);
+            // buffer.SetGlobalDepthBias(0f, 0f);
         }
+    }
+    void SetCascadeData (int index, Vector4 cullingSphere, float tileSize) {
+        float texelSize = 2f * cullingSphere.w / tileSize;
+        // cascadeData[index].x = 1f / cullingSphere.w;
+        cascadeData[index] = new Vector4(
+            1f / cullingSphere.w,
+            texelSize * 1.4142136f
+        );
+        cullingSphere.w *= cullingSphere.w;
+        cascadeCullingSpheres[index] = cullingSphere;
     }
     Vector2 SetTileViewport (int index, int split, float tileSize) {
         Vector2 offset = new Vector2(index % split, index / split);
