@@ -43,13 +43,19 @@ ShadowData GetShadowData (Surface surfaceWS) {
         float4 sphere = _CascadeCullingSpheres[i];
         float distanceSqr = DistanceSquared(surfaceWS.position, sphere.xyz);
         if (distanceSqr < sphere.w) {
+            if (i == _CascadeCount - 1) {
+                // data.strength = 0;
+                data.strength *= FadedShadowStrength(
+                    distanceSqr, 1.0 / sphere.w, _ShadowDistanceFade.z
+                );
+            }
             break;
         }
     }
     if (i == _CascadeCount) {
         data.strength = 0.0;
     }
-
+    // data.strength = 0;
     data.cascadeIndex = i;
     return data;
 }

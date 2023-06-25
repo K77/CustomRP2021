@@ -8,11 +8,12 @@ using UnityEngine.Rendering;
         [Range(1, 4)] public int cascadeCount;
         [Range(0f, 1f)]public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
+        [Range(0.001f, 1f)] public float cascadeFade;
     }
     [Min(0.001f)] public float maxDistance = 100f;
     [Range(0.001f, 1f)] public float distanceFade = 0.1f;    
     public Directional directional = new Directional {
-        atlasSize = TextureSize._1024, cascadeCount = 4,
+        atlasSize = TextureSize._1024, cascadeCount = 4,cascadeFade = 0.1f,
         cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f
     };
     
@@ -111,8 +112,10 @@ public class Shadows {
         );
         
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
+        float f = 1f - settings.directional.cascadeFade;
         buffer.SetGlobalVector(shadowDistanceFadeId, 
-            new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade));
+            new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade,
+                1f / (1f - f * f)));
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -159,8 +162,11 @@ public class Shadows {
                 SetTileViewport(tileIndex, split, tileSize), split
             );
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+            //这句话在这里的意思就是，要改变阴影图集的画法？
+            buffer.SetGlobalDepthBias(0f, 3f);
             ExecuteBuffer();
             context.DrawShadows(ref shadowSettings);
+            buffer.SetGlobalDepthBias(0f, 0f);
         }
     }
     Vector2 SetTileViewport (int index, int split, float tileSize) {
