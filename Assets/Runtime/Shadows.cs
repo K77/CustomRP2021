@@ -23,13 +23,14 @@ public class Shadows {
         dirShadowMatricesId = Shader.PropertyToID("_DirectionalShadowMatrices"),
         cascadeCountId = Shader.PropertyToID("_CascadeCount"),
         cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
-        // shadowDistanceId = Shader.PropertyToID("_ShadowDistance");
+        cascadeDataId = Shader.PropertyToID("_CascadeData"),
         shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
     
     const int maxShadowedDirectionalLightCount = 4, maxCascades = 4;
     static Matrix4x4[]
         dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
-    static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades];
+    static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades],
+        cascadeData = new Vector4[maxCascades];
     
     const string bufferName = "Shadows";
 
@@ -107,9 +108,8 @@ public class Shadows {
         }
         
         buffer.SetGlobalInt(cascadeCountId, settings.directional.cascadeCount);
-        buffer.SetGlobalVectorArray(
-            cascadeCullingSpheresId, cascadeCullingSpheres
-        );
+        buffer.SetGlobalVectorArray(cascadeCullingSpheresId, cascadeCullingSpheres);
+        buffer.SetGlobalVectorArray(cascadeDataId, cascadeData);
         
         buffer.SetGlobalMatrixArray(dirShadowMatricesId, dirShadowMatrices);
         float f = 1f - settings.directional.cascadeFade;
