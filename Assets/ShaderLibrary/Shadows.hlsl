@@ -30,6 +30,7 @@ struct ShadowData {
     float strength;     //表示计算过程中 随着距离等因素造成的衰减
 };
 
+//todo 这个函数被两次调用，传入的参数有点混乱
 float FadedShadowStrength (float distance, float scale, float fade) {
     return saturate((1.0 - distance * scale) * fade);
 }
