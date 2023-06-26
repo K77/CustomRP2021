@@ -35,6 +35,7 @@ Shader "CRP/Lit" {
 			//告诉Unity启用_CLIPPING关键字时编译不同版本的Shader
 			#pragma shader_feature _CLIPPING
 			#pragma shader_feature _PREMULTIPLY_ALPHA
+			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
 			//这一指令会让Unity生成两个该Shader的变体，一个支持GPU Instancing，另一个不支持。
 			#pragma multi_compile_instancing
 			

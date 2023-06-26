@@ -1,6 +1,8 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
 
+#undef SHADER_API_MOBILE //to resolve cannot convert output parameter from 'min16float[4]' to 'float[4]
+
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Shadows.hlsl"

@@ -2,9 +2,11 @@
 using UnityEngine.Rendering;
 [System.Serializable] public class ShadowSettings {
     public enum TextureSize {_512 = 512, _1024 = 1024, _2048 = 2048, _4096 = 4096 }
+    public enum FilterMode { PCF2x2, PCF3x3, PCF5x5, PCF7x7 }
     [System.Serializable] public struct Directional
     {
         public TextureSize atlasSize;
+        public FilterMode filter;
         [Range(1, 4)] public int cascadeCount;
         [Range(0f, 1f)]public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
@@ -13,7 +15,7 @@ using UnityEngine.Rendering;
     [Min(0.001f)] public float maxDistance = 100f;
     [Range(0.001f, 1f)] public float distanceFade = 0.1f;    
     public Directional directional = new Directional {
-        atlasSize = TextureSize._1024, cascadeCount = 4,cascadeFade = 0.1f,
+        atlasSize = TextureSize._1024, cascadeCount = 4,cascadeFade = 0.1f,filter = FilterMode.PCF2x2,
         cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f
     };
     
@@ -24,6 +26,7 @@ public class Shadows {
         cascadeCountId = Shader.PropertyToID("_CascadeCount"),
         cascadeCullingSpheresId = Shader.PropertyToID("_CascadeCullingSpheres"),
         cascadeDataId = Shader.PropertyToID("_CascadeData"),
+        shadowAtlasSizeId = Shader.PropertyToID("_ShadowAtlasSize"),
         shadowDistanceFadeId = Shader.PropertyToID("_ShadowDistanceFade");
     
     const int maxShadowedDirectionalLightCount = 4, maxCascades = 4;
@@ -31,6 +34,8 @@ public class Shadows {
         dirShadowMatrices = new Matrix4x4[maxShadowedDirectionalLightCount * maxCascades];
     static Vector4[] cascadeCullingSpheres = new Vector4[maxCascades],
         cascadeData = new Vector4[maxCascades];
+    
+    static string[] directionalFilterKeywords = { "_DIRECTIONAL_PCF3", "_DIRECTIONAL_PCF5", "_DIRECTIONAL_PCF7", };
     
     const string bufferName = "Shadows";
 
@@ -124,6 +129,10 @@ public class Shadows {
         buffer.SetGlobalVector(shadowDistanceFadeId, 
             new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade,
                 1f / (1f - f * f)));
+        SetKeywords();
+        buffer.SetGlobalVector(
+            shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize)
+        );
         buffer.EndSample(bufferName);
         ExecuteBuffer();
     }
@@ -171,11 +180,13 @@ public class Shadows {
     }
     void SetCascadeData (int index, Vector4 cullingSphere, float tileSize) {
         float texelSize = 2f * cullingSphere.w / tileSize;
-        // cascadeData[index].x = 1f / cullingSphere.w;
+        float filterSize = texelSize * ((float)settings.directional.filter + 1f);
         cascadeData[index] = new Vector4(
             1f / cullingSphere.w,
-            texelSize * 1.4142136f
+            // texelSize * 1.4142136f
+            filterSize * 1.4142136f
         );
+        cullingSphere.w -= filterSize;
         cullingSphere.w *= cullingSphere.w;
         cascadeCullingSpheres[index] = cullingSphere;
     }
@@ -186,7 +197,17 @@ public class Shadows {
         ));
         return offset;
     }
-    
+    void SetKeywords () {
+        int enabledIndex = (int)settings.directional.filter - 1;
+        for (int i = 0; i < directionalFilterKeywords.Length; i++) {
+            if (i == enabledIndex) {
+                buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+            }
+            else {
+                buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+            }
+        }
+    }
     Matrix4x4 ConvertToAtlasMatrix(Matrix4x4 m, Vector2 offset, int split)
     {
         //如果使用反向Z缓冲区，为Z取反
