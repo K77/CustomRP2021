@@ -10,6 +10,7 @@ Material:
   m_Name: CRP_Lit
   m_Shader: {fileID: 4800000, guid: 5be06f897ab2b4b5cab54660e90cd040, type: 3}
   m_ValidKeywords:
+  - _RECEIVE_SHADOWS
   - _SHADOWS_DITHER
   m_InvalidKeywords: []
   m_LightmapFlags: 4
@@ -32,6 +33,7 @@ Material:
     - _DstBlend: 0
     - _Metallic: 0
     - _PremulAlpha: 0
+    - _ReceiveShadows: 1
     - _Shadows: 2
     - _Smoothness: 0
     - _SrcBlend: 1
