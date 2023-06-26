@@ -33,6 +33,11 @@ public class CustomShaderGUI : ShaderGUI
             FadePreset();
             TransparentPreset();
         }
+        
+        if (EditorGUI.EndChangeCheck())
+        {
+            SetShadowCasterPass();
+        }
     }
 
     /// <summary>
@@ -40,10 +45,17 @@ public class CustomShaderGUI : ShaderGUI
     /// </summary>
     /// <param name="name">Property名字</param>
     /// <param name="value">要设定的值</param>
-    void SetProperty(string name, float value)
+    bool SetProperty(string name, float value)
     {
-        //ShaderGUI下的FindProperty函数，返回一个名为name的MaterialProperty
-        FindProperty(name, properties).floatValue = value;
+        //ShaderGUI下的FindProperty函数，返回一个名为name的MaterialProperty,如果找不到返回null
+        MaterialProperty property = FindProperty(name, properties,false);
+        if (property != null)
+        {
+            property.floatValue = value;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -148,6 +160,7 @@ public class CustomShaderGUI : ShaderGUI
             DstBlend = BlendMode.Zero;
             ZWrite = true;
             RenderQueue = RenderQueue.Geometry;
+            Shadows = ShadowMode.On;
         }
     }
 
@@ -164,6 +177,7 @@ public class CustomShaderGUI : ShaderGUI
             DstBlend = BlendMode.OneMinusSrcAlpha;
             ZWrite = true;
             RenderQueue = RenderQueue.AlphaTest;
+            Shadows = ShadowMode.Clip;
         }
     }
 
@@ -180,6 +194,7 @@ public class CustomShaderGUI : ShaderGUI
             DstBlend = BlendMode.OneMinusSrcAlpha;
             ZWrite = false;
             RenderQueue = RenderQueue.Transparent;
+            Shadows = ShadowMode.Dither;
         }
     }
 
@@ -196,6 +211,39 @@ public class CustomShaderGUI : ShaderGUI
             DstBlend = BlendMode.OneMinusSrcAlpha;
             ZWrite = false;
             RenderQueue = RenderQueue.Transparent;
+            Shadows = ShadowMode.Dither;
+        }
+    }
+    
+    enum ShadowMode
+    {
+        On,Clip,Dither,Off
+    }
+
+    ShadowMode Shadows
+    {
+        set
+        {
+            if (SetProperty("_Shadows", (float)value))
+            {
+                SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
+                SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
+            }
+        }
+    }
+
+    void SetShadowCasterPass()
+    {
+        MaterialProperty shadows = FindProperty("_Shadows", properties, false);
+        if (shadows == null || shadows.hasMixedValue)
+        {
+            return;
+        }
+
+        bool enabled = shadows.floatValue < (float)ShadowMode.Off;
+        foreach (Material m in materials)
+        {
+            m.SetShaderPassEnabled("ShadowCaster", enabled);
         }
     }
 }

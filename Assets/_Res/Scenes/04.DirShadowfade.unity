@@ -565,7 +565,6 @@ GameObject:
   - component: {fileID: 730158032}
   - component: {fileID: 730158031}
   - component: {fileID: 730158030}
-  - component: {fileID: 730158029}
   m_Layer: 0
   m_Name: Sphere_002
   m_TagString: Untagged
@@ -573,20 +572,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &730158029
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 730158028}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb825fe5530574c10a883583f0c6f3f1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseColor: {r: 1, g: 1, b: 1, a: 1}
-  cutoff: 0.488
 --- !u!135 &730158030
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -658,7 +643,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 730158028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.45, y: -1.84, z: -2.801}
+  m_LocalPosition: {x: -1.95, y: -1.84, z: -4.19}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
