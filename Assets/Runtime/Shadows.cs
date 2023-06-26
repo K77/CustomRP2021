@@ -3,6 +3,7 @@ using UnityEngine.Rendering;
 [System.Serializable] public class ShadowSettings {
     public enum TextureSize {_512 = 512, _1024 = 1024, _2048 = 2048, _4096 = 4096 }
     public enum FilterMode { PCF2x2, PCF3x3, PCF5x5, PCF7x7 }
+    public enum CascadeBlendMode { Hard, Soft, Dither }
     [System.Serializable] public struct Directional
     {
         public TextureSize atlasSize;
@@ -11,12 +12,13 @@ using UnityEngine.Rendering;
         [Range(0f, 1f)]public float cascadeRatio1, cascadeRatio2, cascadeRatio3;
         public Vector3 CascadeRatios => new Vector3(cascadeRatio1, cascadeRatio2, cascadeRatio3);
         [Range(0.001f, 1f)] public float cascadeFade;
+        public CascadeBlendMode cascadeBlend;
     }
     [Min(0.001f)] public float maxDistance = 100f;
     [Range(0.001f, 1f)] public float distanceFade = 0.1f;    
     public Directional directional = new Directional {
         atlasSize = TextureSize._1024, cascadeCount = 4,cascadeFade = 0.1f,filter = FilterMode.PCF2x2,
-        cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f
+        cascadeRatio1 = 0.1f, cascadeRatio2 = 0.25f, cascadeRatio3 = 0.5f,cascadeBlend = CascadeBlendMode.Hard
     };
     
 }
@@ -36,6 +38,7 @@ public class Shadows {
         cascadeData = new Vector4[maxCascades];
     
     static string[] directionalFilterKeywords = { "_DIRECTIONAL_PCF3", "_DIRECTIONAL_PCF5", "_DIRECTIONAL_PCF7", };
+    static string[] cascadeBlendKeywords = { "_CASCADE_BLEND_SOFT", "_CASCADE_BLEND_DITHER" };
     
     const string bufferName = "Shadows";
 
@@ -129,7 +132,8 @@ public class Shadows {
         buffer.SetGlobalVector(shadowDistanceFadeId, 
             new Vector4(1f / settings.maxDistance, 1f / settings.distanceFade,
                 1f / (1f - f * f)));
-        SetKeywords();
+        SetKeywords(directionalFilterKeywords, (int)settings.directional.filter - 1);
+        SetKeywords(cascadeBlendKeywords, (int)settings.directional.cascadeBlend - 1);
         buffer.SetGlobalVector(
             shadowAtlasSizeId, new Vector4(atlasSize, 1f / atlasSize)
         );
@@ -197,14 +201,14 @@ public class Shadows {
         ));
         return offset;
     }
-    void SetKeywords () {
-        int enabledIndex = (int)settings.directional.filter - 1;
-        for (int i = 0; i < directionalFilterKeywords.Length; i++) {
+    void SetKeywords (string[] keywords, int enabledIndex) {
+        //int enabledIndex = (int)settings.directional.filter - 1;
+        for (int i = 0; i < keywords.Length; i++) {
             if (i == enabledIndex) {
-                buffer.EnableShaderKeyword(directionalFilterKeywords[i]);
+                buffer.EnableShaderKeyword(keywords[i]);
             }
             else {
-                buffer.DisableShaderKeyword(directionalFilterKeywords[i]);
+                buffer.DisableShaderKeyword(keywords[i]);
             }
         }
     }

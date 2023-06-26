@@ -12,6 +12,7 @@ struct Surface {
     //等于1的时候可以认为几乎都是高光，没有漫反射
     float metallic;         
     float smoothness;
+    float dither;
 };
 
 #endif
