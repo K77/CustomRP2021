@@ -9,6 +9,8 @@ Shader "CRP/Lit" {
 		_Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 		
 		[Toggle(_CLIPPING)] _Clipping ("Alpha Clipping", Float) = 0
+		//是否接收阴影
+        [Toggle(_RECEIVE_SHADOWS)] _ReceiveShadows("Receive Shadows",Float) = 1
 		[KeywordEnum(On, Clip, Dither, Off)] _Shadows ("Shadows", Float) = 0
 		
 		[Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
@@ -35,6 +37,7 @@ Shader "CRP/Lit" {
             #pragma target 3.5
 			//告诉Unity启用_CLIPPING关键字时编译不同版本的Shader
 			#pragma shader_feature _CLIPPING
+			#pragma shader_feature _RECEIVE_SHADOWS
 			
 			#pragma shader_feature _PREMULTIPLY_ALPHA
 			#pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
