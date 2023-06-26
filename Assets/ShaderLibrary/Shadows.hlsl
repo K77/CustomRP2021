@@ -71,13 +71,11 @@ float _SampleDirectionalShadowAtlas (float3 positionSTS) {
 }
 
 //被light.hlsl调用, 返回的值如果是1，说明不在阴影内
-float GetDirectionalShadowAttenuation (
-    DirectionalShadowData directional, ShadowData global, Surface surfaceWS
-) {
+float GetDirectionalShadowAttenuation (DirectionalShadowData directional, ShadowData global, Surface surfaceWS) {
     if (directional.strength <= 0.0) {
         return 1.0;
     }
-    float3 normalBias = surfaceWS.normal * _CascadeData[global.cascadeIndex].y;
+    float3 normalBias = surfaceWS.normal * (directional.normalBias * _CascadeData[global.cascadeIndex].y);
     float3 positionSTS = mul(
         _DirectionalShadowMatrices[directional.tileIndex],
         float4(surfaceWS.position + normalBias, 1.0)

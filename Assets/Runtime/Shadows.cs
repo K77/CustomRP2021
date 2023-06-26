@@ -37,6 +37,7 @@ public class Shadows {
     CommandBuffer buffer = new CommandBuffer {name = bufferName};
     struct ShadowedDirectionalLight {
         public int visibleLightIndex;
+        public float slopeScaleBias;
     }
 
     ShadowedDirectionalLight[] ShadowedDirectionalLights =
@@ -60,22 +61,27 @@ public class Shadows {
         this.settings = settings;
     }
 
-    public Vector2 ReserveDirectionalShadows(Light light, int visibleLightIndex)
+    public Vector3 ReserveDirectionalShadows(Light light, int visibleLightIndex)
     {
         if (ShadowedDirectionalLightCount < maxShadowedDirectionalLightCount  &&
             light.shadows != LightShadows.None && light.shadowStrength > 0f &&
             cullingResults.GetShadowCasterBounds(visibleLightIndex, out Bounds b) )
         {
             ShadowedDirectionalLights[ShadowedDirectionalLightCount] =
-                new ShadowedDirectionalLight {visibleLightIndex = visibleLightIndex};
-            return new Vector2(
+                new ShadowedDirectionalLight
+                {
+                    visibleLightIndex = visibleLightIndex,
+                    slopeScaleBias = light.shadowBias
+                };
+            return new Vector3(
                 //原始参数，shadowStrength越小，影子越淡
                 light.shadowStrength, 
-                settings.directional.cascadeCount * ShadowedDirectionalLightCount++
+                settings.directional.cascadeCount * ShadowedDirectionalLightCount++,
+                light.shadowNormalBias
             );
         }
 
-        return Vector2.zero;
+        return Vector3.zero;
     }
     
     public void Render () {
@@ -155,10 +161,10 @@ public class Shadows {
             );
             buffer.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             //这句话在这里的意思就是，要改变阴影图集的画法？
-            // buffer.SetGlobalDepthBias(0f, 3f);
+            buffer.SetGlobalDepthBias(0f, light.slopeScaleBias);
             ExecuteBuffer();
             context.DrawShadows(ref shadowSettings);
-            // buffer.SetGlobalDepthBias(0f, 0f);
+            buffer.SetGlobalDepthBias(0f, 0f);
         }
     }
     void SetCascadeData (int index, Vector4 cullingSphere, float tileSize) {
