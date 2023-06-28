@@ -1,7 +1,6 @@
 #ifndef CUSTOM_LIT_PASS_INCLUDED
 #define CUSTOM_LIT_PASS_INCLUDED
 
-#undef SHADER_API_MOBILE //to resolve cannot convert output parameter from 'min16float[4]' to 'float[4]
 
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
@@ -11,8 +10,8 @@
 #include "../ShaderLibrary/GI.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
+// TEXTURE2D(_BaseMap);
+// SAMPLER(sampler_BaseMap);
 
 // CBUFFER_START(UnityPerMaterial)
 //     float4 _BaseMap_ST;
@@ -21,16 +20,16 @@ SAMPLER(sampler_BaseMap);
 //     float _Metallic;
 //     float _Smoothness;
 // CBUFFER_END
-
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-    //纹理坐标的偏移和缩放可以是每实例数据
-    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseMap_ST)
-    //_BaseColor在数组中的定义格式
-    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseColor)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
-    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+//
+// UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+//     //纹理坐标的偏移和缩放可以是每实例数据
+//     UNITY_DEFINE_INSTANCED_PROP(float4,_BaseMap_ST)
+//     //_BaseColor在数组中的定义格式
+//     UNITY_DEFINE_INSTANCED_PROP(float4,_BaseColor)
+//     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+//     UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+//     UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
+// UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 //Vertex shader的输入参数，都是顶点信息
 struct Attributes {
@@ -97,6 +96,7 @@ float4 LitPassFragment (Varyings input) : SV_TARGET {
     #endif
     GI gi = GetGI(GI_FRAGMENT_DATA(input),surface);
     float3 color = GetLighting(surface, brdf, gi);
+    color += GetEmission(input.baseUV);
     return float4(color, surface.alpha);
 }
 

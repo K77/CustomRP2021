@@ -1,38 +1,48 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-
-//特性：不允许同一物体挂多个该组件
+/// <summary>
+/// 挂到同材质对象上，可以为每个对象设置不同的属性
+/// </summary>
 [DisallowMultipleComponent]
 public class PerObjectMaterialProperties : MonoBehaviour
 {
-    //获取名为"_BaseColor"的Shader属性（全局）
-    private static int baseColorId = Shader.PropertyToID("_BaseColor");
+    static int baseColorId = Shader.PropertyToID("_BaseColor");
     static int cutoffId = Shader.PropertyToID("_Cutoff");
-    
-    //每个物体自己的颜色
-    [SerializeField] Color baseColor = Color.white;
-    
+    static int metallicId = Shader.PropertyToID("_Metallic");
+    static int smoothnessId = Shader.PropertyToID("_Smoothness");
+    static int emissionColorId = Shader.PropertyToID("_EmissionColor");
+
+    [SerializeField]
+    Color baseColor = Color.white;
     [SerializeField, Range(0f, 1f)]
     float cutoff = 0.5f;
+    //定义金属度和光滑度
+    [SerializeField, Range(0f, 1f)]
+    float metallic = 0f;
+    [SerializeField, Range(0f, 1f)]
+    float smoothness = 0.5f;
 
-    //MaterialPropertyBlock用于给每个物体设置材质属性，将其设置为静态，所有物体使用同一个block
-    private static MaterialPropertyBlock block;
+    [SerializeField, ColorUsage(false, true)]
+    Color emissionColor = Color.black;
 
-    //每当设置脚本的属性时都会调用 OnValidate（Editor下）
-    private void OnValidate()
+    static MaterialPropertyBlock block;
+
+    void OnValidate()
     {
-        block ??= new MaterialPropertyBlock();
-
-        //设置block中的baseColor属性(通过baseCalorId索引)为baseColor
+        if (block == null)
+        {
+            block = new MaterialPropertyBlock();
+        }
+        //设置材质属性
         block.SetColor(baseColorId, baseColor);
-        
         block.SetFloat(cutoffId, cutoff);
-        
-        //将物体的Renderer中的颜色设置为block中的颜色
+        block.SetFloat(metallicId, metallic);
+        block.SetFloat(smoothnessId, smoothness);
+        block.SetColor(emissionColorId, emissionColor);
         GetComponent<Renderer>().SetPropertyBlock(block);
     }
-
-    //Runtime时也执行
-    private void Awake()
+    void Awake()
     {
         OnValidate();
     }

@@ -4,18 +4,18 @@
 #include "../ShaderLibrary/Common.hlsl"
 
 //获取BaseMap用于Clip
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
-
-//为了使用GPU Instancing，每实例数据要构建成数组,使用UNITY_INSTANCING_BUFFER_START(END)来包裹每实例数据
-UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
-    //纹理坐标的偏移和缩放可以是每实例数据
-    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseMap_ST)
-    //_BaseColor在数组中的定义格式
-    UNITY_DEFINE_INSTANCED_PROP(float4,_BaseColor)
-    //透明度测试阈值
-    UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
-UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
+// TEXTURE2D(_BaseMap);
+// SAMPLER(sampler_BaseMap);
+//
+// //为了使用GPU Instancing，每实例数据要构建成数组,使用UNITY_INSTANCING_BUFFER_START(END)来包裹每实例数据
+// UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
+//     //纹理坐标的偏移和缩放可以是每实例数据
+//     UNITY_DEFINE_INSTANCED_PROP(float4,_BaseMap_ST)
+//     //_BaseColor在数组中的定义格式
+//     UNITY_DEFINE_INSTANCED_PROP(float4,_BaseColor)
+//     //透明度测试阈值
+//     UNITY_DEFINE_INSTANCED_PROP(float,_Cutoff)
+// UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 //使用结构体定义顶点着色器的输入，一个是为了代码更整洁，一个是为了支持GPU Instancing（获取object的index）
 struct Attributes
