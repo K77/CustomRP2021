@@ -29,7 +29,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Clipping: 0
-    - _Cutoff: 0.445
+    - _Cutoff: 0.547
     - _DstBlend: 0
     - _Metallic: 0
     - _PremulAlpha: 0
